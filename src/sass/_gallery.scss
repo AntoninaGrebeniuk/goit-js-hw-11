@@ -1,0 +1,11 @@
+.gallery {
+  display: flex;
+  margin: 25px;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.photo-card {
+  flex-basis: calc((100% - 90px) / 4);
+  border-radius: 8px;
+}
