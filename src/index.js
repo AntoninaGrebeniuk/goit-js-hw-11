@@ -1,35 +1,79 @@
-// import SimpleLightbox from 'simplelightbox';
-// import 'simplelightbox/dist/simple-lightbox.min.css';
-import { fetchImage } from './js/fetchImages';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+// import { fetchImage } from './js/fetchImages';
 // import { imageCreate } from './js/createCard';
+import Notiflix from 'notiflix';
+import GallaryApiService from './js/gallary-service';
 
 const searchForm = document.querySelector('#search-form');
-const input = document.querySelector('input');
 const galleryRef = document.querySelector('.gallery');
+const loadMoreBtn = document.querySelector('.load-more');
+
+const gallaryApiService = new GallaryApiService();
 
 searchForm.addEventListener('submit', onSearch);
+loadMoreBtn.addEventListener('click', onLoadMore);
+
+// let searchQuery = '';
 
 function onSearch(e) {
   e.preventDefault();
 
-  const searchQuery = input.value.trim();
-  console.log('🚀:', searchQuery);
+  gallaryApiService.searchQuery =
+    e.currentTarget.elements.searchQuery.value.trim();
+  gallaryApiService.resetPage();
 
-  fetchImage(searchQuery)
+  if (gallaryApiService.searchQuery === '') {
+    Notiflix.Notify.failure(
+      "Sorry, the search string can't be empty. Please try again."
+    );
+    searchForm.reset();
+    return;
+  }
+
+  //   fetchImage(searchQuery)
+  //     .then(data => {
+  //       renderImageGallery(data.hits);
+  //     })
+  //     .catch(onFetchError)
+  //     .finally(() => searchForm.reset());
+  // }
+
+  gallaryApiService
+    .fetchImages()
     .then(data => {
-      renderImageGallery(data.hits);
+      if (data.totalHits === 0) {
+        onFetchError();
+      } else {
+        clearGalleryMarkup();
+        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+        renderImageGallery(data.hits);
+        simpleLightbox = new SimpleLightbox('.gallery a', {
+          captionDelay: 250,
+        }).refresh();
+      }
     })
-    .catch(onFetchError)
+    .catch(onFetchError())
     .finally(() => searchForm.reset());
 }
 
-function onFetchError(error) {
+function onFetchError() {
   Notiflix.Notify.failure(
-    'Sorry, there are no images matching your search query. Please try again.',
-    {
-      position: 'center-top',
-    }
+    'Sorry, there are no images matching your search query. Please try again.'
   );
+}
+
+function onLoadMore(e) {
+  gallaryApiService.fetchImages().then(data => {
+    renderImageGallery(data.hits);
+    simpleLightbox = new SimpleLightbox('.gallery a', {
+      captionDelay: 250,
+    }).refresh();
+  });
+}
+
+function clearGalleryMarkup() {
+  galleryRef.innerHTML = '';
 }
 
 function renderImageGallery(images) {
@@ -65,10 +109,9 @@ function renderImageGallery(images) {
     )
     .join('');
 
-  galleryRef.innerHTML = markup;
+  galleryRef.insertAdjacentHTML('beforeend', markup);
 }
 
 // new SimpleLightbox('.gallery a', {
-//   captionsData: 'alt',
 //   captionDelay: 250,
 // });
