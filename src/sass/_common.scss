@@ -55,21 +55,13 @@ button {
   border: 1px solid #1ec996;
   border-radius: 4px;
   cursor: pointer;
-  // box-shadow: 0px 2px 15px 2px #757575;
   transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
     border 250ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:focus,
   &:hover {
     background-color: #faffd1;
     border: 1px solid #faffd1;
     box-shadow: 0px 5px 15px 2px #757575;
   }
 }
-
-// .container {
-//   width: 100%;
-//   padding: 0 20px;
-//   margin: 0px auto;
-// }

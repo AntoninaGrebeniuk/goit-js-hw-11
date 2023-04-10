@@ -1,20 +1,25 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-// import { fetchImage } from './js/fetchImages';
-// import { imageCreate } from './js/createCard';
 import Notiflix from 'notiflix';
 import GallaryApiService from './js/gallary-service';
+import LoadMoreBtn from './js/load-more-btn';
 
 const searchForm = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
-const loadMoreBtn = document.querySelector('.load-more');
+const endText = document.querySelector('.end-text');
 
 const gallaryApiService = new GallaryApiService();
+const loadMoreBtn = new LoadMoreBtn({
+  selector: '[data-action="load-more"]',
+  hidden: true,
+});
+
+let simpleLightbox = new SimpleLightbox('.gallery a', {
+  captionDelay: 250,
+});
 
 searchForm.addEventListener('submit', onSearch);
-loadMoreBtn.addEventListener('click', onLoadMore);
-
-// let searchQuery = '';
+loadMoreBtn.refs.button.addEventListener('click', onLoadMore);
 
 function onSearch(e) {
   e.preventDefault();
@@ -31,30 +36,48 @@ function onSearch(e) {
     return;
   }
 
-  //   fetchImage(searchQuery)
-  //     .then(data => {
-  //       renderImageGallery(data.hits);
-  //     })
-  //     .catch(onFetchError)
-  //     .finally(() => searchForm.reset());
-  // }
-
   gallaryApiService
     .fetchImages()
     .then(data => {
       if (data.totalHits === 0) {
         onFetchError();
       } else {
+        endText.classList.add('is-hidden');
         clearGalleryMarkup();
+
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+
         renderImageGallery(data.hits);
-        simpleLightbox = new SimpleLightbox('.gallery a', {
-          captionDelay: 250,
-        }).refresh();
+        simpleLightbox.refresh();
+        loadMoreBtn.show();
       }
     })
-    .catch(onFetchError())
+    .catch(onFetchError)
     .finally(() => searchForm.reset());
+}
+
+function onLoadMore() {
+  gallaryApiService.fetchImages().then(data => {
+    let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
+
+    if (data.totalHits <= totalImages) {
+      endOfSearch();
+      renderImageGallery(data.hits);
+      simpleLightbox.refresh();
+      loadMoreBtn.hide();
+      endText.classList.remove('is-hidden');
+    } else {
+      loadMoreBtn.disable();
+      renderImageGallery(data.hits);
+
+      simpleLightbox.refresh();
+      loadMoreBtn.enable();
+    }
+  });
+}
+
+function clearGalleryMarkup() {
+  galleryRef.innerHTML = '';
 }
 
 function onFetchError() {
@@ -63,17 +86,10 @@ function onFetchError() {
   );
 }
 
-function onLoadMore(e) {
-  gallaryApiService.fetchImages().then(data => {
-    renderImageGallery(data.hits);
-    simpleLightbox = new SimpleLightbox('.gallery a', {
-      captionDelay: 250,
-    }).refresh();
-  });
-}
-
-function clearGalleryMarkup() {
-  galleryRef.innerHTML = '';
+function endOfSearch() {
+  Notiflix.Notify.info(
+    "We're sorry, but you've reached the end of search results."
+  );
 }
 
 function renderImageGallery(images) {
@@ -111,7 +127,3 @@ function renderImageGallery(images) {
 
   galleryRef.insertAdjacentHTML('beforeend', markup);
 }
-
-// new SimpleLightbox('.gallery a', {
-//   captionDelay: 250,
-// });
