@@ -55,18 +55,18 @@ input {
   object-fit: cover;
 }
 
-.load-more {
+.button {
   display: block;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 30px;
 }
 
-.load-more.is-hidden {
+.button.is-hidden {
   display: none;
 }
 
-.load-more > .spinner.is-hidden {
+.button > .spinner.is-hidden {
   display: none;
 }
 

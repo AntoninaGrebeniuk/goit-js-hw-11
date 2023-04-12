@@ -56,24 +56,45 @@ function onSearch(e) {
     .finally(() => searchForm.reset());
 }
 
-function onLoadMore() {
-  gallaryApiService.fetchImages().then(data => {
-    let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
+// function onLoadMore() {
+//   gallaryApiService.fetchImages().then(data => {
+//     let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
 
-    if (data.totalHits <= totalImages) {
-      endOfSearch();
-      renderImageGallery(data.hits);
-      simpleLightbox.refresh();
-      loadMoreBtn.hide();
-      endText.classList.remove('is-hidden');
-    } else {
-      loadMoreBtn.disable();
-      renderImageGallery(data.hits);
+//     if (data.totalHits <= totalImages) {
+//       endOfSearch();
+//       renderImageGallery(data.hits);
+//       simpleLightbox.refresh();
+//       loadMoreBtn.hide();
 
-      simpleLightbox.refresh();
-      loadMoreBtn.enable();
-    }
-  });
+//       endText.classList.remove('is-hidden');
+//     } else {
+//       loadMoreBtn.disable();
+//       renderImageGallery(data.hits);
+
+//       simpleLightbox.refresh();
+//       loadMoreBtn.enable();
+//     }
+//   });
+// }
+
+async function onLoadMore() {
+  const data = await gallaryApiService.fetchImages();
+  let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
+
+  if (data.totalHits <= totalImages) {
+    endOfSearch();
+    renderImageGallery(data.hits);
+    simpleLightbox.refresh();
+    loadMoreBtn.hide();
+
+    endText.classList.remove('is-hidden');
+  } else {
+    loadMoreBtn.disable();
+    renderImageGallery(data.hits);
+
+    simpleLightbox.refresh();
+    loadMoreBtn.enable();
+  }
 }
 
 function clearGalleryMarkup() {

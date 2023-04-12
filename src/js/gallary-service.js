@@ -11,15 +11,24 @@ export default class GallaryApiService {
     this.perPage = PAGE_COUNT;
   }
 
+  // async fetchImages() {
+  //   return await axios
+  //     .get(
+  //       `${BASE_URL}?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.page}`
+  //     )
+  //     .then(responce => {
+  //       this.page += 1;
+  //       return responce.data;
+  //     });
+  // }
+
   async fetchImages() {
-    return await axios
-      .get(
-        `${BASE_URL}?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.page}`
-      )
-      .then(responce => {
-        this.page += 1;
-        return responce.data;
-      });
+    const responce = await axios.get(
+      `${BASE_URL}?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${this.page}`
+    );
+    const data = await responce.data;
+    this.page += 1;
+    return data;
   }
 
   resetPage() {
