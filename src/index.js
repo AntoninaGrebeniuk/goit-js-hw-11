@@ -1,14 +1,14 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
-import GallaryApiService from './js/gallary-service';
+import GalleryApiService from './js/gallery-service';
 import LoadMoreBtn from './js/load-more-btn';
 
 const searchForm = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
 const endText = document.querySelector('.end-text');
 
-const gallaryApiService = new GallaryApiService();
+const galleryApiService = new GalleryApiService();
 const loadMoreBtn = new LoadMoreBtn({
   selector: '[data-action="load-more"]',
   hidden: true,
@@ -21,14 +21,18 @@ let simpleLightbox = new SimpleLightbox('.gallery a', {
 searchForm.addEventListener('submit', onSearch);
 loadMoreBtn.refs.button.addEventListener('click', onLoadMore);
 
-function onSearch(e) {
+async function onSearch(e) {
   e.preventDefault();
 
-  gallaryApiService.searchQuery =
+  galleryApiService.searchQuery =
     e.currentTarget.elements.searchQuery.value.trim();
-  gallaryApiService.resetPage();
+  galleryApiService.resetPage();
+  clearGalleryMarkup();
+  // searchForm.reset();
+  loadMoreBtn.hide();
+  endText.classList.add('is-hidden');
 
-  if (gallaryApiService.searchQuery === '') {
+  if (galleryApiService.searchQuery === '') {
     Notiflix.Notify.failure(
       "Sorry, the search string can't be empty. Please try again."
     );
@@ -36,50 +40,42 @@ function onSearch(e) {
     return;
   }
 
-  gallaryApiService
-    .fetchImages()
-    .then(data => {
-      if (data.totalHits === 0) {
-        onFetchError();
-      } else {
-        endText.classList.add('is-hidden');
-        clearGalleryMarkup();
+  const data = await galleryApiService.fetchImages();
 
-        Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+  try {
+    if (data.totalHits === 0) {
+      clearGalleryMarkup();
+      loadMoreBtn.hide();
+      onFetchError();
+    } else {
+      endText.classList.add('is-hidden');
+      clearGalleryMarkup();
 
-        renderImageGallery(data.hits);
-        simpleLightbox.refresh();
-        loadMoreBtn.show();
-      }
-    })
-    .catch(onFetchError)
-    .finally(() => searchForm.reset());
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+
+      renderImageGallery(data.hits);
+      simpleLightbox.refresh();
+      loadMoreBtn.show();
+    }
+
+    if (data.totalHits < galleryApiService.perPage) {
+      loadMoreBtn.hide();
+      endText.classList.remove('is-hidden');
+      endOfSearch();
+      return;
+    } else {
+      loadMoreBtn.show();
+    }
+  } catch (err) {
+    onFetchError(err);
+  } finally {
+    searchForm.reset();
+  }
 }
 
-// function onLoadMore() {
-//   gallaryApiService.fetchImages().then(data => {
-//     let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
-
-//     if (data.totalHits <= totalImages) {
-//       endOfSearch();
-//       renderImageGallery(data.hits);
-//       simpleLightbox.refresh();
-//       loadMoreBtn.hide();
-
-//       endText.classList.remove('is-hidden');
-//     } else {
-//       loadMoreBtn.disable();
-//       renderImageGallery(data.hits);
-
-//       simpleLightbox.refresh();
-//       loadMoreBtn.enable();
-//     }
-//   });
-// }
-
 async function onLoadMore() {
-  const data = await gallaryApiService.fetchImages();
-  let totalImages = gallaryApiService.perPage * (gallaryApiService.page - 1);
+  const data = await galleryApiService.fetchImages();
+  let totalImages = galleryApiService.perPage * (galleryApiService.page - 1);
 
   if (data.totalHits <= totalImages) {
     endOfSearch();

@@ -1,19 +1,21 @@
-<form class="search-form" id="search-form">
-  <input
-    type="text"
-    name="searchQuery"
-    autocomplete="off"
-    placeholder="Search images..."
-  />
-  <button type="submit">Search</button>
-</form>
+<div class="container">
+  <form class="search-form" id="search-form">
+    <input
+      type="text"
+      name="searchQuery"
+      autocomplete="off"
+      placeholder="Search images..."
+    />
+    <button class="search-form__btn" type="submit">Search</button>
+  </form>
 
-<div class="gallery"></div>
+  <div class="gallery"></div>
 
-<button type="button" class="load-more button" data-action="load-more">
-  <span class="label">Load more</span>
-</button>
+  <button type="button" class="load-more button" data-action="load-more">
+    <span class="label">Load more</span>
+  </button>
 
-<p class="end-text is-hidden">
-  We're sorry, but you've reached the end of search results.
-</p>
+  <p class="end-text is-hidden">
+    We're sorry, but you've reached the end of search results.
+  </p>
+</div>
